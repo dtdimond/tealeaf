@@ -91,6 +91,11 @@ def do_player_hit_stay(is_stay, players_hand, dealers_hand, deck)
     return
   else
     display_hands(players_hand, dealers_hand, false)
+    if get_score(players_hand) == 21
+        puts "Blackjack! You win!"
+        return "win"
+    end
+
     puts "Enter 'stay' to stay or 'hit' to receive another card."
     is_stay = gets.chomp == "hit" ? false : true
     
@@ -101,18 +106,16 @@ def do_player_hit_stay(is_stay, players_hand, dealers_hand, deck)
       if get_score(players_hand) > 21
         puts "Bust! You lose"
         display_hands(players_hand, dealers_hand, true)
-        return false
+        return "loss"
       elsif get_score(players_hand) == 21
         puts "Blackjack! You win!"
         display_hands(players_hand, dealers_hand, true)
-        return true
+        return "win"
       else #if not, loop back
         do_player_hit_stay(is_stay, players_hand, dealers_hand, deck)
       end
     end
   end
-
-  return nil
 end
 
 # Dealer
@@ -132,11 +135,11 @@ def do_dealer_hit_stay(is_stay, players_hand, dealers_hand, deck)
       if get_score(dealers_hand) == 21
         puts "Dealer blackjack! Dealer wins"
         display_hands(players_hand, dealers_hand, true)
-        return false
+        return "loss"
       elsif get_score(dealers_hand) > 21
         puts "Dealer bust! You win"
         display_hands(players_hand, dealers_hand, true)
-        return true
+        return "win"
       else #if not, loop back
         do_dealer_hit_stay(false, players_hand, dealers_hand, deck)
       end
@@ -144,8 +147,6 @@ def do_dealer_hit_stay(is_stay, players_hand, dealers_hand, deck)
        puts "Dealer stays with a #{get_score(dealers_hand)}"
     end
   end
-
-  return nil
 end
 
 def get_if_player_wins(players_hand, dealers_hand)
@@ -178,17 +179,23 @@ def start_game(name)
   init_deck(4, deck)
   deal_new_hand(players_hand, dealers_hand, deck)
 
+
   # Do loops to hit/stay for player and then for dealer
-  # A fn will return true if the player won from a 
+  # Fn will return true if the player won from a 
   # blackjack/dealer bust or false if player bust/dealer
   # blackjack. Otherwise go to showdown.
-  if do_player_hit_stay(false, players_hand, dealers_hand, deck)
+
+  result = do_player_hit_stay(false, players_hand, dealers_hand, deck)
+  if result ==  "win"
     return true
-  elsif do_player_hit_stay(false, players_hand, dealers_hand, deck) == false
+  elsif result == "loss"
     return false
-  elsif do_dealer_hit_stay(false, players_hand, dealers_hand, deck)
+  end
+
+  result = do_dealer_hit_stay(false, players_hand, dealers_hand, deck)
+  if result == "win"
     return true
-  elsif do_dealer_hit_stay(false, players_hand, dealers_hand, deck) == false
+  elsif result == "loss"
     return false
   else
     return get_if_player_wins(players_hand, dealers_hand)
@@ -196,6 +203,7 @@ def start_game(name)
 
 end
 
+#Empty hands
 def clear_hands(hands)
   hands.each { |hand| hand.clear }
 end
@@ -214,6 +222,10 @@ def deal_new_hand(players_hand, dealers_hand, deck)
   end
 end  
 
+
+
+
+#Main loop
 wins = 0
 losses = 0
   
