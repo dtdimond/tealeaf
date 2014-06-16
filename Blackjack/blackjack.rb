@@ -51,38 +51,38 @@ def display_hands(players_hand, dealers_hand, is_show_all)
 end
   
 # Returns the value of the hand
+# Credit to Prasanna Joshi for 
+# inspiration on handling the aces
 def get_score(hand)
   score = 0
-
-  hand.each do |card|
-    val = card[:value]
-    case val
-    when 2..9
+  
+  values = hand.map{|card| card[:value]}
+  values.each do |val|
+    if Array(2..10).include?(val)
       score += val
-    when 10,"Jack","Queen","King"
+    elsif ["Jack", "Queen", "King"].include?(val)
       score += 10
-    when "Ace"
-      score + 11 <= 21 ? score += 11 : score += 1
     end
-
-    return score if score > 21
+  end
+  
+  # deal with the aces
+  values.count("Ace").times do
+    if score + 11 <= 21
+      score += 11
+    else
+      score += 1
+    end
   end
 
   return score
 end
+
 
 # Returns the score of all the faceup cards. Only
 # the first card is facedown for the dealer.
 def get_score_face_up(hand)
   return get_score(hand[1..-1])
 end
-
-# Checks if the passed in hand has busted
-# Returns true or false
-def is_bust(hand)
-  return get_score(hand) > 21 ? true : false
-end
-
 
 # Player loop - repeatedly ask to hit/stay until stay or bust
 #   loops using recursion for fun
@@ -96,7 +96,7 @@ def do_player_hit_stay(is_stay, players_hand, dealers_hand, deck)
     
     if(!is_stay)
       deal_card(players_hand, deck)
-      
+
       #Check if we've won or lost on hit
       if get_score(players_hand) > 21
         puts "Bust! You lose"
@@ -111,6 +111,8 @@ def do_player_hit_stay(is_stay, players_hand, dealers_hand, deck)
       end
     end
   end
+
+  return nil
 end
 
 # Dealer
@@ -120,7 +122,7 @@ def do_dealer_hit_stay(is_stay, players_hand, dealers_hand, deck)
   else
     display_hands(players_hand, dealers_hand, true)
 
-    sleep(5) #let player register the info
+    sleep(1.5) #let player register the info
 
     #Dealer must hit if below 17
     if get_score(dealers_hand) < 17
@@ -142,6 +144,8 @@ def do_dealer_hit_stay(is_stay, players_hand, dealers_hand, deck)
        puts "Dealer stays with a #{get_score(dealers_hand)}"
     end
   end
+
+  return nil
 end
 
 def get_if_player_wins(players_hand, dealers_hand)
@@ -162,6 +166,7 @@ end
 
 # Main game entry point 
 def start_game(name)
+  puts "\n\n************************"
   puts "Let's play some blackjack, #{name}!\n\n"
 
   #game state variables
@@ -174,12 +179,17 @@ def start_game(name)
   deal_new_hand(players_hand, dealers_hand, deck)
 
   # Do loops to hit/stay for player and then for dealer
-  # Each fn will return true if the player won from a 
-  # blackjack/dealer bust. Otherwise go to showdown.
+  # A fn will return true if the player won from a 
+  # blackjack/dealer bust or false if player bust/dealer
+  # blackjack. Otherwise go to showdown.
   if do_player_hit_stay(false, players_hand, dealers_hand, deck)
     return true
+  elsif do_player_hit_stay(false, players_hand, dealers_hand, deck) == false
+    return false
   elsif do_dealer_hit_stay(false, players_hand, dealers_hand, deck)
     return true
+  elsif do_dealer_hit_stay(false, players_hand, dealers_hand, deck) == false
+    return false
   else
     return get_if_player_wins(players_hand, dealers_hand)
   end
