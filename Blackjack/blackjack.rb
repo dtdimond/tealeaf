@@ -2,7 +2,7 @@
 # shuffles the deck as well
 def init_deck(num_decks, deck)
   suits = ["diamonds","clubs","spades","hearts"]
-  values = [1,2,3,4,5,6,7,8,9,10,11,12,13]
+  values = ["Ace",2,3,4,5,6,7,8,9,10,"Jack","Queen","King"]
   deck.clear #shouldn't need this, but just in case
 
   suits.each do |suit|
@@ -26,12 +26,20 @@ end
 
 # Display what each player is showing
 def display_hands(players_hand, dealers_hand, is_show_all)
+  #Players score/hand 
   puts "You have a #{get_score(players_hand)} "
   players_hand.each do |card|
     puts "#{card[:value]} of #{card[:suit]}"
   end
 
-  puts "\nDealer is showing a #{get_score(dealers_hand)} "
+  #Display dealers score
+  if is_show_all
+    puts "\nDealer is showing a #{get_score(dealers_hand)} "
+  else
+    puts "\nDealer is showing a #{get_score_face_up(dealers_hand)} "
+  end
+
+  # Display dealers cards
   dealers_hand.each_with_index do |card, index|
     #first card is face down unless dealer's turn
     if index != 0 || is_show_all 
@@ -51,9 +59,9 @@ def get_score(hand)
     case val
     when 2..9
       score += val
-    when 10..13
+    when 10,"Jack","Queen","King"
       score += 10
-    when 1
+    when "Ace"
       score + 11 <= 21 ? score += 11 : score += 1
     end
 
@@ -61,6 +69,12 @@ def get_score(hand)
   end
 
   return score
+end
+
+# Returns the score of all the faceup cards. Only
+# the first card is facedown for the dealer.
+def get_score_face_up(hand)
+  return get_score(hand[1..-1])
 end
 
 # Checks if the passed in hand has busted
@@ -108,18 +122,18 @@ def do_dealer_hit_stay(is_stay, players_hand, dealers_hand, deck)
 
     sleep(5) #let player register the info
 
-    #Dealer must hit if below 16
-    if get_score(dealers_hand) < 16
+    #Dealer must hit if below 17
+    if get_score(dealers_hand) < 17
       deal_card(dealers_hand, deck)
       
       #Check if dealer wins/loses on this hit
       if get_score(dealers_hand) == 21
         puts "Dealer blackjack! Dealer wins"
-        display_hands(players_hand, dealers_hand)
+        display_hands(players_hand, dealers_hand, true)
         return false
       elsif get_score(dealers_hand) > 21
         puts "Dealer bust! You win"
-        display_hands(players_hand, dealers_hand)
+        display_hands(players_hand, dealers_hand, true)
         return true
       else #if not, loop back
         do_dealer_hit_stay(false, players_hand, dealers_hand, deck)
@@ -147,8 +161,8 @@ def get_if_player_wins(players_hand, dealers_hand)
 end
 
 # Main game entry point 
-def start_game
-  puts "Let's play some blackjack"
+def start_game(name)
+  puts "Let's play some blackjack, #{name}!\n\n"
 
   #game state variables
   deck = []
@@ -190,6 +204,23 @@ def deal_new_hand(players_hand, dealers_hand, deck)
   end
 end  
 
-
+wins = 0
+losses = 0
   
-start_game
+puts "Welcome to blackjack. What's your name?"
+name = gets.chomp
+
+while 1
+  if start_game(name)
+    wins += 1
+    puts "Nice win!"
+  else
+    losses += 1
+    puts "Better luck next time"
+  end
+
+  puts "You're now at #{wins} wins and #{losses} losses. Do you want to play again? Type 'yes' if so, or anything else to quit."
+  break if gets.chomp != "yes"
+end
+
+
