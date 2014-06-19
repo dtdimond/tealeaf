@@ -1,8 +1,14 @@
 class Vehicle
   @@num_vehicles = 0
+  attr_accessor :color
+  attr_reader :model, :year
 
-  def initialize
+  def initialize(y, m ,c)
     @@num_vehicles += 1
+    @year = y
+    @model = m
+    @color = c
+    @speed = 0
   end
 
   def print_num_vehicles
@@ -27,6 +33,16 @@ class Vehicle
 
   def current_speed
     puts "You are going #{@speed}"
+  end
+
+  def print_age
+    puts "The vehicle is #{years_old} years old."
+  end
+
+  private
+
+  def years_old
+    Time.now.year - self.year
   end
 end
 

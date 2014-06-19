@@ -1,21 +1,20 @@
 require_relative 'vehicle'
 
+module Offroadable
+  def offroad
+    "The vehicle is now offroading"
+  end
+end
+
+
 class MyTruck < Vehicle
-  attr_accessor :color 
-  attr_reader :year
+  include Offroadable
 
   NUM_DOORS = 2 
  
-  def initialize(y, c, m)
-    @year = y
-    @color = c
-    @model = m
-    @speed = 0
-
-    @@num_vehicles += 1 
-  end
-
 end
 
 truck = MyTruck.new(2011, "Purple", "Ford")
 truck.print_num_vehicles
+
+puts MyTruck.ancestors

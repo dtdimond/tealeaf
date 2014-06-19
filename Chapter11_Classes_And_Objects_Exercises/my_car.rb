@@ -1,16 +1,6 @@
 require_relative 'vehicle'
 
 class MyCar < Vehicle
-  attr_accessor :color 
-  attr_reader :year
-
- 
-  def initialize(y, c, m)
-    @year = y
-    @color = c
-    @model = m
-    @speed = 0
-  end
 
   def spray_paint(color)
     self.color = color
